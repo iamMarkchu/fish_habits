@@ -69,9 +69,28 @@ func (m *UserHabit) Remove() (int64, error) {
 type Sign struct {
 	Id          int       `orm:"auto"`
 	UserHabitId int       `orm:"column(uh_id);description(用户习惯关系表ID)"`
-	SignDay     uint16    `orm:"description(签到日期)"`
+	SignDay     int    `orm:"description(签到日期)"`
 	Created     time.Time `orm:"auto_now_add;column(created_at);type(datetime)"`
 	Updated     time.Time `orm:"auto_now;column(updated_at);type(datetime)"`
+}
+
+func (m *Sign) Fetch() (error) {
+	var (
+		o        = orm.NewOrm()
+		err error
+	)
+	err = o.Read(m, "UserHabitId", "SignDay")
+	return err
+}
+
+func (m *Sign) Store() (int64, error) {
+	var (
+		o        = orm.NewOrm()
+		err error
+		id int64
+	)
+	id, err = o.Insert(m)
+	return id, err
 }
 
 // 用户表

@@ -77,12 +77,19 @@ func (c *HabitController) RemoveUserHabit()  {
 	}
 }
 
-// @router /:id/user/:user/sign
+// @router /:id/user/:uid/sign [post]
 func (c *HabitController) Sign()  {
 	var (
 		habitId int
 		userId int
-		id int
+		id int64
 		err error
 	)
+	habitId, _ = strconv.Atoi(c.Ctx.Input.Param(":id"))
+	userId, _ = strconv.Atoi(c.Ctx.Input.Param(":uid"))
+	if id, err = c.HabitService.Sign(habitId, userId); err != nil {
+		c.JsonReturn("用户签到接口发生错误:" + err.Error(), "", 500)
+	} else {
+		c.JsonReturn("用户签到接口", id, http.StatusOK)
+	}
 }

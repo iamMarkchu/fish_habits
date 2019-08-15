@@ -64,8 +64,8 @@ func init() {
     beego.GlobalControllerRouter["fish_habits/controllers:HabitController"] = append(beego.GlobalControllerRouter["fish_habits/controllers:HabitController"],
         beego.ControllerComments{
             Method: "Sign",
-            Router: `/:id/user/:user/sign`,
-            AllowHTTPMethods: []string{"get"},
+            Router: `/:id/user/:uid/sign`,
+            AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
             Params: nil})
