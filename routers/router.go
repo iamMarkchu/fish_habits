@@ -25,6 +25,11 @@ func init() {
 				&controllers.CategoryController{},
 			),
 		),
+		beego.NSNamespace("/habit",
+			beego.NSInclude(
+				&controllers.HabitController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

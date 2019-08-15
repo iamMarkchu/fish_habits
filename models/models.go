@@ -8,15 +8,25 @@ import (
 	"time"
 )
 
-// 习惯表
-type Habit struct {
-	Id      int       `orm:"auto"`
-	Name    string    `orm:"unique;description(习惯名称)"`
-	Status  uint8     `orm:"default(1);description(用户状态)"`
-	UserId  int       `orm:"default(0);column(user_id);description(创建人)"`
-	Created time.Time `orm:"auto_now_add;column(created_at);type(datetime)"`
-	Updated time.Time `orm:"auto_now;column(updated_at);type(datetime)"`
-}
+const (
+	STATUS_BLANK = iota
+	STATUS_NORMAL
+	STATUS_BANNED
+
+	TEST_USER_ID = 1
+
+	DEFAULT_DISPLAY_ORDER = 99
+)
+
+// 类别习惯表
+//type CategoryHabit struct {
+//	Id      int       `orm:"auto"`
+//	CateId  int       `orm:"description(类别id)"`
+//	HabitId int       `orm:"description(习惯id)"`
+//	Status  uint8     `orm:"default(1);description(类别下习惯的状态)"`
+//	Created time.Time `orm:"auto_now_add;column(created_at);type(datetime)"`
+//	Updated time.Time `orm:"auto_now;column(updated_at);type(datetime)"`
+//}
 
 // 用户习惯表
 type UserHabit struct {
@@ -26,6 +36,33 @@ type UserHabit struct {
 	Status  uint8     `orm:"default(1);description(状态)"`
 	Created time.Time `orm:"auto_now_add;column(created_at);type(datetime)"`
 	Updated time.Time `orm:"auto_now;column(updated_at);type(datetime)"`
+}
+
+func (m *UserHabit) Store() (int64, error) {
+	var (
+		o        = orm.NewOrm()
+		err      error
+		insertId int64
+	)
+	insertId, err = o.Insert(m)
+	return insertId, err
+}
+
+func (m *UserHabit) Fetch() error {
+	var (
+		o        = orm.NewOrm()
+		err      error
+	)
+	err = o.Read(m, "HabitId", "UserId")
+	return err
+}
+
+func (m *UserHabit) Remove() (int64, error) {
+	var (
+		o        = orm.NewOrm()
+	)
+	m.Status = STATUS_BANNED
+	return o.Update(m, "Status")
 }
 
 // 打卡表
@@ -39,13 +76,13 @@ type Sign struct {
 
 // 用户表
 type User struct {
-	Id       int          `orm:"auto"`
-	Name     string       `orm:"unique;description(用户名)"`
-	NickName string       `orm:"default();description(昵称)"`
-	Password string       `orm:"default();description(密码)"`
-	Status   uint8        `orm:"default(1);description(用户状态)"`
-	Created  time.Time    `orm:"auto_now_add;column(created_at);type(datetime)"`
-	Updated  time.Time    `orm:"auto_now;column(updated_at);type(datetime)"`
+	Id       int       `orm:"auto"`
+	Name     string    `orm:"unique;description(用户名)"`
+	NickName string    `orm:"default();description(昵称)"`
+	Password string    `orm:"default();description(密码)"`
+	Status   uint8     `orm:"default(1);description(用户状态)"`
+	Created  time.Time `orm:"auto_now_add;column(created_at);type(datetime)"`
+	Updated  time.Time `orm:"auto_now;column(updated_at);type(datetime)"`
 }
 
 func init() {
@@ -54,7 +91,7 @@ func init() {
 	err = orm.RegisterDataBase("default", "mysql", beego.AppConfig.String("sqlconn"))
 	go CheckError(err, "[RegisterDataBase Error]")
 	orm.RegisterModel(new(User), new(Category), new(Habit), new(UserHabit), new(Sign))
-	err = orm.RunSyncdb("default", true, true)
+	err = orm.RunSyncdb("default", false, true)
 	go CheckError(err, "[RunSyncdb Error]")
 	orm.Debug, err = beego.AppConfig.Bool("ormdebug")
 	go CheckError(err, "[orm Debug Error]")
